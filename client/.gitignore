@@ -25,3 +25,6 @@ dist-ssr
 
 #custom
 *.jpg
+
+#environment
+.env

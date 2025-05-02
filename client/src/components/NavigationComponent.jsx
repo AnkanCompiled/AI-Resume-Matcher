@@ -8,7 +8,7 @@ export default function NavigationComponent() {
             {/* Left Section - Logo and Navigation */}
             <div className='flex items-center space-x-10'>
                 <div className="flex items-center space-x-4">
-                    <span className='text-2xl font-semibold font-poppins lowercase'>{APP_NAME}</span>
+                    <NavLink to={"/"} className='text-2xl font-semibold font-poppins lowercase'>{APP_NAME}</NavLink>
                 </div>
                 <div className='flex items-center space-x-6'>
                     {Object.entries({ "Jobs": "/jobs", "About Us": "/about" }).map(([key, values], index) => (
@@ -39,12 +39,12 @@ export default function NavigationComponent() {
 
             {/* Right Section - Registration Buttons */}
             <div className='flex items-center'>
-                <button className='border-2 rounded-xl w-[100px] h-[50px] shadow-lg hover:bg-gray-100 duration-200'>
+                <NavLink to={"/auth/login"} className={({ isActive }) => `flex items-center justify-center border-2 rounded-xl w-[100px] h-[50px] shadow-lg hover:bg-gray-100 duration-200 ${isActive && 'bg-gray-100'}`}>
                     <span className='text-md font-semibold'>Login</span>
-                </button>
-                <button className='ml-4 bg-[#3B82F6] rounded-xl w-[100px] h-[50px]  shadow-md hover:bg-[#3469be] duration-200'>
+                </NavLink>
+                <NavLink to={"/auth/register"} className={({ isActive }) => `ml-4 flex items-center justify-center bg-[#3B82F6] rounded-xl w-[100px] h-[50px] shadow-md hover:bg-[#3469be] duration-200 ${isActive && 'bg-[#3469be]'}`}>
                     <span className='text-md font-semibold text-white'>Register</span>
-                </button>
+                </NavLink>
             </div>
         </nav >
     )
