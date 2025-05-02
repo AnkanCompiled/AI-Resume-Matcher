@@ -2,12 +2,9 @@ import google.generativeai as genai
 from langchain_community.vectorstores import FAISS
 from langchain.docstore.document import Document
 from langchain.embeddings.base import Embeddings
-import os
-from dotenv import load_dotenv
+from app.configs.env_config import get_genai_api_key
 
-load_dotenv()
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=get_genai_api_key())
 
 class GenAIEmbeddings(Embeddings):
     def embed_query(self, text: str):
