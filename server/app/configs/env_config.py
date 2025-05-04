@@ -9,8 +9,8 @@ def get_genai_api_key():
         raise ValueError("GENAI_API_KEY environment variable is not set.")
     return GENAI_API_KEY
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
-ALLOWED_METHODS = os.getenv("ALLOWED_METHODS", "GET, POST, PUT, PATCH, DELETE").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+ALLOWED_METHODS = os.getenv("ALLOWED_METHODS", "GET,POST,PUT,PATCH,DELETE").split(",")
 ALLOWED_HEADERS = os.getenv("ALLOWED_HEADERS", "*").split(",")
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")

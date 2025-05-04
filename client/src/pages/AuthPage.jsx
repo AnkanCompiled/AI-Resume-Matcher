@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { use, useState } from 'react';
 import {
     Box,
     TextField,
@@ -7,22 +7,72 @@ import {
     IconButton,
     InputAdornment
 } from '@mui/material';
-import { VisibilityOutlined, VisibilityOffOutlined } from '@mui/icons-material';
+import { VisibilityOutlined, VisibilityOffOutlined, Construction } from '@mui/icons-material';
 
 import { Link } from 'react-router-dom';
+import { loginApi, registerApi } from '../apis/authApi';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AuthPage({ type }) {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const { login } = useAuth();
+    const values = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        global: ''
+    }
+    const [formValues, setFormValues] = useState(values);
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState(values);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Add your login logic here
-        console.log(firstName, lastName, email, password);
-    };
+        setError(values);
+
+        const handleLogin = async () => {
+            try {
+                const formData = new FormData();
+                formData.append('username', formValues.email);
+                formData.append('password', formValues.password);
+                await loginApi(formData);
+                await login();
+            } catch (err) {
+                console.error(err);
+                const status = err.response?.status;
+                if (status === 401) {
+                    setError({ email: 'Invalid email or password', password: 'Invalid email or password' });
+                } else if (status === 500) {
+                    setError({ global: 'Server error, please try again later' });
+                } else {
+                    setError({ global: 'An unknown error occurred' });
+                }
+            }
+        };
+
+        const handleRegister = async () => {
+            try {
+                const name = `${formValues.firstName} ${formValues.lastName}`;
+                await registerApi(name, formValues.email, formValues.password);
+                await handleLogin();
+            } catch (err) {
+                const status = err.response?.status;
+                if (status === 400) {
+                    setError({ email: 'Email already exists' });
+                } else if (status === 500) {
+                    setError({ global: 'Server error, please try again later' });
+                } else {
+                    setError({ global: 'An unknown error occurred' });
+                }
+            }
+        };
+
+        if (type === 'login') {
+            await handleLogin();
+        } else {
+            await handleRegister();
+        }
+    }
 
     return (
         <Box
@@ -49,21 +99,19 @@ export default function AuthPage({ type }) {
 
                 {type === 'register' && (
                     <Box sx={{ display: 'flex', gap: 2 }}>
-                        <TextField
-                            label="First Name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            fullWidth
-                            required
-                        />
-
-                        <TextField
-                            label="Last Name"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            fullWidth
-                            required
-                        />
+                        {Object.entries({ firstName: 'First Name', lastName: 'Last Name' }).map(([key, value], index) => (
+                            <TextField
+                                key={index}
+                                label={value}
+                                value={formValues[key]}
+                                onChange={(e) => setFormValues(prev => ({ ...prev, [key]: e.target.value }))}
+                                autoComplete={key === 'firstName' ? 'given-name' : 'family-name'}
+                                helperText={error[key]}
+                                error={Boolean(error[key])}
+                                fullWidth
+                                required
+                            />
+                        ))}
                     </Box>
                 )}
 
@@ -71,8 +119,11 @@ export default function AuthPage({ type }) {
                 <TextField
                     label="Email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formValues.email}
+                    onChange={(e) => setFormValues(prev => ({ ...prev, email: e.target.value }))}
+                    autoComplete='email'
+                    helperText={error.email}
+                    error={Boolean(error.email)}
                     fullWidth
                     required
                 />
@@ -80,8 +131,11 @@ export default function AuthPage({ type }) {
                 <TextField
                     label="Password"
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={formValues.password}
+                    onChange={(e) => setFormValues(prev => ({ ...prev, password: e.target.value }))}
+                    autoComplete='current-password'
+                    helperText={error.password}
+                    error={Boolean(error.password)}
                     fullWidth
                     required
                     slotProps={{
@@ -99,7 +153,7 @@ export default function AuthPage({ type }) {
                         }
                     }}
                 />
-
+                {error.global && <p className='text-red-600 text-sm'>{error.global}</p>}
                 <Button type="submit" variant="contained" size="large" >
                     {type === 'login' ? 'Login' : 'Register'}
                 </Button>

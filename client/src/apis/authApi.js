@@ -1,28 +1,26 @@
 import { API } from "./api";
 
-export async function loginApi(email, password) {
+export async function loginApi(formData) {
   try {
-    const response = await API.post(`/auth/login`, {
-      email: email,
-      password: password,
+    const response = await API.post(`/auth/login`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     return response.data;
   } catch (err) {
-    console.error("Error in loginApi:", err);
     throw err;
   }
 }
-
 export async function registerApi(name, email, password) {
   try {
-    const response = await API.post(`/auth/register`, {
-      name: name,
-      email: email,
-      password: password,
+    const response = await API.post("/auth/register", {
+      name,
+      email,
+      password,
     });
     return response.data;
   } catch (err) {
-    console.error("Error in registerApi:", err);
     throw err;
   }
 }
@@ -31,16 +29,15 @@ export const logoutApi = async () => {
   try {
     await API.get("/auth/logout");
   } catch (err) {
-    console.error("Error in logoutApi:", err);
     throw err;
   }
 };
 
-export const verifyLoginApi = async () => {
+export const accessTokenApi = async () => {
   try {
-    await API.get("/auth/verify_login");
+    const response = await API.get("/auth/access-token");
+    return response.data;
   } catch (err) {
-    console.error("Error in verifyLoginApi:", err);
     throw err;
   }
 };

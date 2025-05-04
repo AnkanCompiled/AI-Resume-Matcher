@@ -1,6 +1,9 @@
 import time
 from fastapi import FastAPI, Request
+from fastapi.exceptions import HTTPException, RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 from app.configs.env_config import ALLOWED_METHODS, ALLOWED_ORIGINS, ALLOWED_HEADERS
 from app.routes import auth_route
 
@@ -9,10 +12,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[ALLOWED_ORIGINS],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=[ALLOWED_METHODS],
-    allow_headers=[ALLOWED_HEADERS],
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
 )
 
 @app.middleware("http")
@@ -23,7 +26,34 @@ async def log_process_time(request: Request, call_next):
     response.headers["X-Process-Time"] = str(process_time)
     return response
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": "HTTP error", "detail": exc.detail},
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"message": "Validation error", "errors": exc.errors()},
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logging.error(f"Unhandled error: {exc} - URL: {request.url} - Method: {request.method}")
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Internal server error, please try again later."},
+    )
+
+
 app.include_router(auth_route.router, prefix="/api/auth", tags=["Authentication"])
+
+@app.get("/api")
+async def root():
+    return {"message": "Server Check!"}
 
 
 

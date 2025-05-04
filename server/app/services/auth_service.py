@@ -16,4 +16,4 @@ async def authenticate_user(email: str, password: str):
     user = await user_collection.find_one({"email": email})
     if not user or not verify_password(password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return user._id
+    return user["_id"]
